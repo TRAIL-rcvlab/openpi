@@ -1,0 +1,43 @@
+# Run with:
+# docker compose -f scripts/compose.yml up --build
+services:
+  RcvkabOpenpi:
+    image: pizero_server:latest
+    # build:
+    #   context: ..
+    #   dockerfile: scripts/docker/serve_policy.Dockerfile
+    init: true
+    tty: true
+    network_mode: host
+    command: bash # ← 进入容器就启动 bash
+    userns_mode: "host"   # 将容器 root 映射到当前用户
+    # Populate configured openpi data home to /openpi_assets inside the container.
+    # Populate aws credential inside the container.
+    volumes:
+      - $PWD:/app
+      - ${OPENPI_DATA_HOME:-~/.cache/openpi}:/openpi_assets
+      - /data2/qeli/datasets/Manipulation-SimData:/dataset
+      - /dev/shm:/dev/shm # 共享内存
+      - /data2/axgu/jaxcache:/jax_cache # JAX 编译缓存目录
+    environment:
+      - SERVER_ARGS
+      - OPENPI_DATA_HOME=/openpi_assets
+      - IS_DOCKER=true
+      - http_proxy=http://127.0.0.1:1080
+      - https_proxy=http://127.0.0.1:1080
+      - JAX_COMPILATION_CACHE_DIR=/jaxconfig_cache
+
+    # Comment out this block if not running on a machine with GPUs.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              # count: 4
+              capabilities: [ gpu ]
+              # device_ids: [ "0", "2" ] # 挂第 1 号 GPU
+              device_ids: ["0","1" ] # 挂第 1 号 GPU
+
+              # device_ids: [ "1", "3" ] # 挂第 1 号 GPU
+
+              # docker compose -f scripts/docker/compose.yml up -d

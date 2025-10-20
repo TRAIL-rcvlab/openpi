@@ -98,7 +98,30 @@ class RepackTransform(DataTransformFn):
 
     def __call__(self, data: DataDict) -> DataDict:
         flat_item = flatten_dict(data)
-        return jax.tree.map(lambda k: flat_item[k], self.structure)
+        
+        def get_with_error(key: str):
+            # Try the key as-is first
+            if key in flat_item:
+                return flat_item[key]
+            
+            # Try replacing '/' with '.' (for compatibility with LeRobot datasets)
+            alt_key = key.replace('/', '.')
+            if alt_key in flat_item:
+                return flat_item[alt_key]
+            
+            # Try replacing '.' with '/' (for the opposite case)
+            alt_key2 = key.replace('.', '/')
+            if alt_key2 in flat_item:
+                return flat_item[alt_key2]
+            
+            # If none of the above work, raise an error with helpful information
+            available_keys = sorted(flat_item.keys())
+            raise KeyError(
+                f"Key '{key}' not found in data. "
+                f"Available keys: {available_keys}"
+            )
+        
+        return jax.tree.map(get_with_error, self.structure)
 
 
 @dataclasses.dataclass(frozen=True)

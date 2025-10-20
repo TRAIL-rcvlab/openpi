@@ -94,6 +94,7 @@ def main(config_name: str, max_frames: int | None = None):
         data_loader, num_batches = create_rlds_dataloader(
             data_config, config.model.action_horizon, config.batch_size, max_frames
         )
+        print("Using RLDS data loader")
     else:
         data_loader, num_batches = create_torch_dataloader(
             data_config, config.model.action_horizon, config.batch_size, config.model, config.num_workers, max_frames
@@ -115,3 +116,4 @@ def main(config_name: str, max_frames: int | None = None):
 
 if __name__ == "__main__":
     tyro.cli(main)
+
