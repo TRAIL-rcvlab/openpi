@@ -1041,7 +1041,7 @@ _CONFIGS = [
         # Here is an example of loading a pi0 model for LoRA fine-tuning.
         model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"),
         data=LeRobotRcvlabDataConfig(
-            repo_id="luobai/move_banana_to_box_3",
+            repo_id="luobai/move_cup_to_shelf",
             base_config=DataConfig(prompt_from_task=True),
             extra_delta_transform=True,
         ),
@@ -1056,6 +1056,7 @@ _CONFIGS = [
         ).get_freeze_filter(),
         # Turn off EMA for LoRA finetuning.
         ema_decay=None,
+        batch_size=16
     ),
     #
     # RoboArena configs.

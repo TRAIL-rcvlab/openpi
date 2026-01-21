@@ -9,8 +9,8 @@ services:
     init: true
     tty: true
     network_mode: host
-    command: bash # ← 进入容器就启动 bash
-    userns_mode: "host"   # 将容器 root 映射到当前用户
+    command: bash -lc "apt-get update && apt-get install -y libgl1 libglib2.0-0 ffmpeg && exec bash" # 默认启动时先安装依赖再进入 bash
+    userns_mode: "host"   # 将容器 root 映射到当前用户docker
     # Populate configured openpi data home to /openpi_assets inside the container.
     # Populate aws credential inside the container.
     volumes:
@@ -19,12 +19,14 @@ services:
       - /data2/qeli/datasets/Manipulation-SimData:/dataset
       - /dev/shm:/dev/shm # 共享内存
       - /data2/axgu/jaxcache:/jax_cache # JAX 编译缓存目录
+      # - /data2/axgu/.cache:/root/.cache
+      - /data2/axgu/.cache/huggingface:/root/.cache/huggingface
     environment:
       - SERVER_ARGS
       - OPENPI_DATA_HOME=/openpi_assets
       - IS_DOCKER=true
-      - http_proxy=http://127.0.0.1:1080
-      - https_proxy=http://127.0.0.1:1080
+      # - http_proxy=http://127.0.0.1:1080
+      # - https_proxy=http://127.0.0.1:1080
       - JAX_COMPILATION_CACHE_DIR=/jaxconfig_cache
 
     # Comment out this block if not running on a machine with GPUs.
@@ -35,8 +37,8 @@ services:
             - driver: nvidia
               # count: 4
               capabilities: [ gpu ]
-              # device_ids: [ "0", "2" ] # 挂第 1 号 GPU
-              device_ids: ["0","1" ] # 挂第 1 号 GPU
+              # device_ids: [ "0","1"] # 挂第 1 号 GPU
+              device_ids: ["0","1","2","3" ] # 挂第 1 号 GPU
 
               # device_ids: [ "1", "3" ] # 挂第 1 号 GPU
 
