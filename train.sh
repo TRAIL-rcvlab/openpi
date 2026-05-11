@@ -1,0 +1,1 @@
+docker exec -d openpi-RcvkabOpenpi-1 bash -lc 'cd /app && mkdir -p logs && CUDA_VISIBLE_DEVICES=0,1 WANDB_MODE=online WANDB_API_KEY=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 nohup uv run scripts/train.py pi0_rcvlab_low_mem_finetune --exp-name=hdh1 --save-interval=5000 --log-interval=100 --overwrite > logs/train_resume.log 2>&1'
