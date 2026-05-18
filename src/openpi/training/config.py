@@ -603,7 +603,7 @@ class TrainConfig:
     # device memory will be reduced but training could potentially be slower.
     # eg. if total device is 4 and fsdp devices is 2; then the model will shard to 2 devices and run
     # data parallel between 2 groups of devices.
-    fsdp_devices: int = 1
+    fsdp_devices: int = 4
 
     @property
     def assets_dirs(self) -> pathlib.Path:
@@ -1060,6 +1060,56 @@ _CONFIGS = [
         batch_size=32,
         save_interval=2000,
         log_interval=50,
+    ),
+    TrainConfig(
+        name="pi05_rcvlab",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=10, discrete_state_input=False),
+        data=LeRobotRcvlabDataConfig(
+            # repo_id="hdh/lerobot_put_cup_black_50",
+            # repo_id="hdh/lerobot_fold_50",
+            repo_id="hdh/lerobot_duck_cooker_50",
+            base_config=DataConfig(prompt_from_task=True),
+            extra_delta_transform=True,
+        ),
+        batch_size=32,
+        # lr_schedule=_optimizer.CosineDecaySchedule(
+        #     warmup_steps=10_000,
+        #     peak_lr=5e-5,
+        #     decay_steps=1_000_000,
+        #     decay_lr=5e-5,
+        # ),
+        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
+        ema_decay=0.999,
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        # weight_loader=weight_loaders.CheckpointWeightLoader("/home/hdh/projects/ConfidenceRLinf/Models/openpi_jax_pi05_base/pi05_base/params"),
+        num_train_steps=10000,
+        save_interval=2000,
+    ),
+    # 用于美团的训练配置
+    TrainConfig(
+        name="pi05_mtbot",
+        model=pi0_config.Pi0Config(pi05=True, action_horizon=10, discrete_state_input=False),
+        data=LeRobotRcvlabDataConfig(
+            # repo_id="hdh/lerobot_put_cup_black_50",
+            # repo_id="hdh/lerobot_fold_50",
+            repo_id="luobai/mtbot_move",
+            base_config=DataConfig(prompt_from_task=True),
+            extra_delta_transform=True,
+        ),
+        batch_size=32,
+        # lr_schedule=_optimizer.CosineDecaySchedule(
+        #     warmup_steps=10_000,
+        #     peak_lr=5e-5,
+        #     decay_steps=1_000_000,
+        #     decay_lr=5e-5,
+        # ),
+        optimizer=_optimizer.AdamW(clip_gradient_norm=1.0),
+        ema_decay=0.999,
+        # ema_decay=None,
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi05_base/params"),
+        # weight_loader=weight_loaders.CheckpointWeightLoader("/home/hdh/projects/ConfidenceRLinf/Models/openpi_jax_pi05_base/pi05_base/params"),
+        num_train_steps=10000,
+        save_interval=2000,
     ),
     #
     # RoboArena configs.
